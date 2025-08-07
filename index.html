@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Lift Simulator with Floor Indicator</title>
+  <title>Lift Simulator</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -44,26 +44,23 @@
       width: 40px;
       height: 100px;
       background-color: #444;
-      transition: bottom 1s ease-in-out;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: bold;
+      font-size: 14px;
     }
 
     .indicator {
-      position: absolute;
-      top: -30px;
-      left: 80px;
-      width: 40px;
-      text-align: center;
-      font-weight: bold;
       background-color: #222;
-      color: #fff;
-      padding: 5px;
-      border-radius: 5px;
+      padding: 4px 6px;
+      border-radius: 4px;
     }
   </style>
 </head>
 <body>
   <div class="building">
-    
     <div class="floor" id="floor-3">Floor 3 <button onclick="callLift(3)">Call</button></div>
     <div class="floor" id="floor-2">Floor 2 <button onclick="callLift(2)">Call</button></div>
     <div class="floor" id="floor-1">Floor 1 <button onclick="callLift(1)">Call</button></div>
@@ -75,18 +72,27 @@
   </div>
 
   <script>
-    function callLift(floor) {
+    let currentFloor = 1;
+
+    function callLift(targetFloor) {
       const lift = document.getElementById("lift");
       const indicator = document.getElementById("indicator");
       const floorHeight = 100;
-      const targetPosition = (floor - 1) * floorHeight;
+      const distance = Math.abs(targetFloor - currentFloor);
+      const duration = distance * 1000; // 1 second per floor
 
+      // Set transition duration dynamically
+      lift.style.transition = `bottom ${duration}ms ease-in-out`;
+
+      // Move lift
+      const targetPosition = (targetFloor - 1) * floorHeight;
       lift.style.bottom = `${targetPosition}px`;
 
-      // Update indicator after transition
+      // Update indicator after movement
       setTimeout(() => {
-        indicator.textContent = `Floor ${floor}`;
-      }, 1000); // Matches the CSS transition duration
+        indicator.textContent = `Floor ${targetFloor}`;
+        currentFloor = targetFloor;
+      }, duration);
     }
   </script>
 </body>
