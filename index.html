@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Lift Simulator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      margin-top: 50px;
+    }
+
+    .building {
+      position: relative;
+      width: 200px;
+      height: 300px;
+      border: 2px solid #333;
+    }
+
+    .floor {
+      height: 100px;
+      border-bottom: 1px solid #ccc;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 10px;
+      background-color: #f0f0f0;
+    }
+
+    .shaft {
+      position: absolute;
+      left: 80px;
+      bottom: 0;
+      width: 40px;
+      height: 300px;
+      border-left: 2px solid #000;
+      border-right: 2px solid #000;
+    }
+
+    .lift {
+      position: absolute;
+      bottom: 0;
+      width: 40px;
+      height: 100px;
+      background-color: #444;
+      transition: bottom 1s ease-in-out;
+    }
+  </style>
+</head>
+<body>
+  <div class="building">
+    <div class="floor" id="floor-3">Floor 3 <button onclick="callLift(3)">Call</button></div>
+    <div class="floor" id="floor-2">Floor 2 <button onclick="callLift(2)">Call</button></div>
+    <div class="floor" id="floor-1">Floor 1 <button onclick="callLift(1)">Call</button></div>
+    <div class="shaft">
+      <div class="lift" id="lift"></div>
+    </div>
+  </div>
+
+  <script>
+    function callLift(floor) {
+      const lift = document.getElementById("lift");
+      const floorHeight = 100;
+      const targetPosition = (floor - 1) * floorHeight;
+      lift.style.bottom = `${targetPosition}px`;
+    }
+  </script>
+</body>
+</html>
