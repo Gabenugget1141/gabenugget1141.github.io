@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Lift Simulator</title>
+  <title>test</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -61,36 +61,37 @@
 </head>
 <body>
   <div class="building">
-    <div class="floor" id="floor-3">Floor 3 <button onclick="callLift(3)">Call</button></div>
-    <div class="floor" id="floor-2">Floor 2 <button onclick="callLift(2)">Call</button></div>
-    <div class="floor" id="floor-1">Floor 1 <button onclick="callLift(1)">Call</button></div>
+    <div class="floor">Floor 02 <button onclick="callLift(2)">Call</button></div>
+    <div class="floor">Floor 01 <button onclick="callLift(1)">Call</button></div>
+    <div class="floor">Floor GR <button onclick="callLift(0)">Call</button></div>
     <div class="shaft">
       <div class="lift" id="lift">
-        <div class="indicator" id="indicator">Floor 1</div>
+        <div class="indicator" id="indicator">GR</div>
       </div>
     </div>
   </div>
 
   <script>
-    let currentFloor = 1;
+    const floorNames = {
+      0: "GR",
+      1: "01",
+      2: "02"
+    };
+
+    let currentFloor = 0;
 
     function callLift(targetFloor) {
       const lift = document.getElementById("lift");
       const indicator = document.getElementById("indicator");
       const floorHeight = 100;
       const distance = Math.abs(targetFloor - currentFloor);
-      const duration = distance * 1000; // 1 second per floor
+      const duration = distance * 1000;
 
-      // Set transition duration dynamically
       lift.style.transition = `bottom ${duration}ms ease-in-out`;
+      lift.style.bottom = `${targetFloor * floorHeight}px`;
 
-      // Move lift
-      const targetPosition = (targetFloor - 1) * floorHeight;
-      lift.style.bottom = `${targetPosition}px`;
-
-      // Update indicator after movement
       setTimeout(() => {
-        indicator.textContent = `Floor ${targetFloor}`;
+        indicator.textContent = floorNames[targetFloor];
         currentFloor = targetFloor;
       }, duration);
     }
