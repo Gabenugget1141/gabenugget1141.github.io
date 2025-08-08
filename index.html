@@ -78,22 +78,42 @@
       2: "02"
     };
 
+    const floorHeight = 100;
     let currentFloor = 0;
+    let animationFrame;
 
     function callLift(targetFloor) {
       const lift = document.getElementById("lift");
       const indicator = document.getElementById("indicator");
-      const floorHeight = 100;
+
+      const start = currentFloor * floorHeight;
+      const end = targetFloor * floorHeight;
       const distance = Math.abs(targetFloor - currentFloor);
       const duration = distance * 1000;
 
-      lift.style.transition = `bottom ${duration}ms ease-in-out`;
-      lift.style.bottom = `${targetFloor * floorHeight}px`;
+      const startTime = performance.now();
 
-      setTimeout(() => {
-        indicator.textContent = floorNames[targetFloor];
-        currentFloor = targetFloor;
-      }, duration);
+      cancelAnimationFrame(animationFrame); // Stop any previous animation
+
+      function animate(time) {
+        const elapsed = time - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const position = start + (end - start) * progress;
+
+        lift.style.bottom = `${position}px`;
+
+        // Interpolate floor based on position
+        const approxFloor = Math.round(position / floorHeight);
+        indicator.textContent = floorNames[approxFloor] || `?`;
+
+        if (progress < 1) {
+          animationFrame = requestAnimationFrame(animate);
+        } else {
+          currentFloor = targetFloor;
+        }
+      }
+
+      animationFrame = requestAnimationFrame(animate);
     }
   </script>
 </body>
