@@ -2,19 +2,23 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Lift</title>
+  <title>Dynamic Lift</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       display: flex;
-      justify-content: center;
-      margin-top: 50px;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 30px;
+    }
+
+    .controls {
+      margin-bottom: 20px;
     }
 
     .building {
       position: relative;
       width: 200px;
-      height: 300px;
       border: 2px solid #333;
     }
 
@@ -33,7 +37,6 @@
       left: 80px;
       bottom: 0;
       width: 40px;
-      height: 300px;
       border-left: 2px solid #000;
       border-right: 2px solid #000;
     }
@@ -57,14 +60,21 @@
       padding: 4px 6px;
       border-radius: 4px;
     }
+
+    input[type="text"] {
+      width: 60px;
+      margin-right: 10px;
+    }
   </style>
 </head>
 <body>
-  <div class="building">
-    <div class="floor">Floor 02 <button onclick="callLift(2)">Call</button></div>
-    <div class="floor">Floor 01 <button onclick="callLift(1)">Call</button></div>
-    <div class="floor">Floor GR <button onclick="callLift(0)">Call</button></div>
-    <div class="shaft">
+  <div class="controls">
+    <input type="text" id="floorName" placeholder="Name">
+    <button onclick="addFloor()">Add Floor</button>
+  </div>
+
+  <div class="building" id="building">
+    <div class="shaft" id="shaft">
       <div class="lift" id="lift">
         <div class="indicator" id="indicator">GR</div>
       </div>
@@ -72,12 +82,28 @@
   </div>
 
   <script>
-    const floorNames = { 0: "GR", 1: "01", 2: "02" };
+    const floorNames = {};
     const floorHeight = 100;
     let currentFloor = 0;
     let animationFrame;
+    let floorCount = 0;
 
-    // Cubic ease-in-out function
+    function addFloor() {
+      const nameInput = document.getElementById("floorName");
+      const name = nameInput.value.trim() || `F${floorCount}`;
+      floorNames[floorCount] = name;
+
+      const building = document.getElementById("building");
+      const floorDiv = document.createElement("div");
+      floorDiv.className = "floor";
+      floorDiv.innerHTML = `Floor ${name} <button onclick="callLift(${floorCount})">Call</button>`;
+      building.insertBefore(floorDiv, building.firstChild); // Add at top
+
+      document.getElementById("shaft").style.height = `${(floorCount + 1) * floorHeight}px`;
+      nameInput.value = "";
+      floorCount++;
+    }
+
     function easeInOut(t) {
       return t < 0.5
         ? 4 * t * t * t
@@ -116,6 +142,10 @@
 
       animationFrame = requestAnimationFrame(animate);
     }
+
+    // Initialize with Ground Floor
+    floorNames[0] = "GR";
+    addFloor(); // Adds GR as first floor
   </script>
 </body>
 </html>
