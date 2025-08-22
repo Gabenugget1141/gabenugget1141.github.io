@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>test</title>
+  <title>Lift with Acceleration</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -72,15 +72,17 @@
   </div>
 
   <script>
-    const floorNames = {
-      0: "GR",
-      1: "01",
-      2: "02"
-    };
-
+    const floorNames = { 0: "GR", 1: "01", 2: "02" };
     const floorHeight = 100;
     let currentFloor = 0;
     let animationFrame;
+
+    // Cubic ease-in-out function
+    function easeInOut(t) {
+      return t < 0.5
+        ? 4 * t * t * t
+        : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    }
 
     function callLift(targetFloor) {
       const lift = document.getElementById("lift");
@@ -92,21 +94,20 @@
       const duration = distance * 1000;
 
       const startTime = performance.now();
-
-      cancelAnimationFrame(animationFrame); // Stop any previous animation
+      cancelAnimationFrame(animationFrame);
 
       function animate(time) {
         const elapsed = time - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        const position = start + (end - start) * progress;
+        const t = Math.min(elapsed / duration, 1);
+        const eased = easeInOut(t);
+        const position = start + (end - start) * eased;
 
         lift.style.bottom = `${position}px`;
 
-        // Interpolate floor based on position
         const approxFloor = Math.round(position / floorHeight);
         indicator.textContent = floorNames[approxFloor] || `?`;
 
-        if (progress < 1) {
+        if (t < 1) {
           animationFrame = requestAnimationFrame(animate);
         } else {
           currentFloor = targetFloor;
