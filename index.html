@@ -73,56 +73,64 @@
 
   <script>
     const floorNames = { 0: "GR", 1: "01", 2: "02" };
-const floorHeight = 100;
-let currentFloor = 0;
-let animationFrame;
+    const floorHeight = 100;
+    let currentFloor = 0;
+    let animationFrame;
 
-const maxVelocity = 100; // px/s
-const acceleration = 200; // px/s²
+    const maxVelocity = 100; // px/s
+    const acceleration = 200; // px/s²
 
-function callLift(targetFloor) {
-  const lift = document.getElementById("lift");
-  const indicator = document.getElementById("indicator");
+    function callLift(targetFloor) {
+      const lift = document.getElementById("lift");
+      const indicator = document.getElementById("indicator");
 
-  const startY = currentFloor * floorHeight;
-  const endY = targetFloor * floorHeight;
-  const direction = Math.sign(endY - startY);
-  let position = startY;
-  let velocity = 0;
-  let lastTime = performance.now();
+      const startY = currentFloor * floorHeight;
+      const endY = targetFloor * floorHeight;
+      const direction = Math.sign(endY - startY);
+      const totalDistance = Math.abs(endY - startY);
 
-  cancelAnimationFrame(animationFrame);
+      let position = startY;
+      let velocity = 0;
+      let lastTime = performance.now();
 
-  function animate(time) {
-    const deltaTime = (time - lastTime) / 1000; // seconds
-    lastTime = time;
+      cancelAnimationFrame(animationFrame);
 
-    // Accelerate
-    velocity += acceleration * deltaTime * direction;
+      function animate(time) {
+        const deltaTime = (time - lastTime) / 1000; // seconds
+        lastTime = time;
 
-    // Clamp velocity
-    velocity = Math.min(Math.abs(velocity), maxVelocity) * direction;
+        const distanceCovered = Math.abs(position - startY);
+        const halfway = totalDistance / 2;
 
-    // Update position
-    position += velocity * deltaTime;
+        // Accelerate until halfway, then decelerate
+        if (distanceCovered < halfway) {
+          velocity += acceleration * deltaTime;
+        } else {
+          velocity -= acceleration * deltaTime;
+        }
 
-    // Check if we've reached or passed the target
-    if ((direction > 0 && position >= endY) || (direction < 0 && position <= endY)) {
-      position = endY;
-      currentFloor = targetFloor;
-      velocity = 0;
-    } else {
+        // Clamp velocity
+        velocity = Math.min(velocity, maxVelocity);
+
+        // Apply direction
+        position += velocity * deltaTime * direction;
+
+        // Stop if reached or passed target
+        if ((direction > 0 && position >= endY) || (direction < 0 && position <= endY)) {
+          position = endY;
+          currentFloor = targetFloor;
+          velocity = 0;
+        } else {
+          animationFrame = requestAnimationFrame(animate);
+        }
+
+        lift.style.bottom = `${position}px`;
+        const approxFloor = Math.round(position / floorHeight);
+        indicator.textContent = floorNames[approxFloor] || "?";
+      }
+
       animationFrame = requestAnimationFrame(animate);
     }
-
-    lift.style.bottom = `${position}px`;
-    const approxFloor = Math.round(position / floorHeight);
-    indicator.textContent = floorNames[approxFloor] || "?";
-  }
-
-  animationFrame = requestAnimationFrame(animate);
-}
-
   </script>
 </body>
 </html>
