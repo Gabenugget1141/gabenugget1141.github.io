@@ -73,49 +73,56 @@
 
   <script>
     const floorNames = { 0: "GR", 1: "01", 2: "02" };
-    const floorHeight = 100;
-    let currentFloor = 0;
-    let animationFrame;
+const floorHeight = 100;
+let currentFloor = 0;
+let animationFrame;
 
-    // Cubic ease-in-out function
-    function easeInOut(t) {
-      return t < 0.5
-        ? 4 * t * t * t
-        : 1 - Math.pow(-2 * t + 2, 3) / 2;
-    }
+const maxVelocity = 100; // px/s
+const acceleration = 200; // px/s²
 
-    function callLift(targetFloor) {
-      const lift = document.getElementById("lift");
-      const indicator = document.getElementById("indicator");
+function callLift(targetFloor) {
+  const lift = document.getElementById("lift");
+  const indicator = document.getElementById("indicator");
 
-      const start = currentFloor * floorHeight;
-      const end = targetFloor * floorHeight;
-      const distance = Math.abs(targetFloor - currentFloor);
-      const duration = distance * 1000;
+  const startY = currentFloor * floorHeight;
+  const endY = targetFloor * floorHeight;
+  const direction = Math.sign(endY - startY);
+  let position = startY;
+  let velocity = 0;
+  let lastTime = performance.now();
 
-      const startTime = performance.now();
-      cancelAnimationFrame(animationFrame);
+  cancelAnimationFrame(animationFrame);
 
-      function animate(time) {
-        const elapsed = time - startTime;
-        const t = Math.min(elapsed / duration, 1);
-        const eased = easeInOut(t);
-        const position = start + (end - start) * eased;
+  function animate(time) {
+    const deltaTime = (time - lastTime) / 1000; // seconds
+    lastTime = time;
 
-        lift.style.bottom = `${position}px`;
+    // Accelerate
+    velocity += acceleration * deltaTime * direction;
 
-        const approxFloor = Math.round(position / floorHeight);
-        indicator.textContent = floorNames[approxFloor] || `?`;
+    // Clamp velocity
+    velocity = Math.min(Math.abs(velocity), maxVelocity) * direction;
 
-        if (t < 1) {
-          animationFrame = requestAnimationFrame(animate);
-        } else {
-          currentFloor = targetFloor;
-        }
-      }
+    // Update position
+    position += velocity * deltaTime;
 
+    // Check if we've reached or passed the target
+    if ((direction > 0 && position >= endY) || (direction < 0 && position <= endY)) {
+      position = endY;
+      currentFloor = targetFloor;
+      velocity = 0;
+    } else {
       animationFrame = requestAnimationFrame(animate);
     }
+
+    lift.style.bottom = `${position}px`;
+    const approxFloor = Math.round(position / floorHeight);
+    indicator.textContent = floorNames[approxFloor] || "?";
+  }
+
+  animationFrame = requestAnimationFrame(animate);
+}
+
   </script>
 </body>
 </html>
