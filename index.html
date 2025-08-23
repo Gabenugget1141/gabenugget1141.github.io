@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Lift</title>
+  <title>Lift with Velocity</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -13,7 +13,7 @@
     .building {
       position: relative;
       width: 200px;
-      height: 400px; /* Updated for 4 floors */
+      height: 400px;
       border: 2px solid #333;
     }
     .floor {
@@ -30,7 +30,7 @@
       left: 80px;
       bottom: 0;
       width: 40px;
-      height: 400px; /* Updated for 4 floors */
+      height: 400px;
       border-left: 2px solid #000;
       border-right: 2px solid #000;
     }
@@ -68,46 +68,59 @@
   </div>
 
   <script>
-    const floorNames = {
-      0: "GR",
-      1: "01",
-      2: "02",
-      3: "03"
-    };
+    const floorNames = { 0: "GR", 1: "01", 2: "02", 3: "03" };
     const floorHeight = 100;
     let currentFloor = 0;
     let animationFrame;
 
-    function easeInOut(t) {
-      return t < 0.5
-        ? 4 * t * t * t
-        : 1 - Math.pow(-2 * t + 2, 3) / 2;
-    }
+    // Physics parameters
+    const vMax = 0.3; // max velocity in px/ms
+    const a = 0.001;  // acceleration in px/ms²
 
     function callLift(targetFloor) {
       const lift = document.getElementById("lift");
       const indicator = document.getElementById("indicator");
-      const start = currentFloor * floorHeight;
-      const end = targetFloor * floorHeight;
-      const distance = Math.abs(targetFloor - currentFloor);
-      const duration = distance * 1000;
-      const startTime = performance.now();
+
+      const startY = currentFloor * floorHeight;
+      const endY = targetFloor * floorHeight;
+      const direction = Math.sign(endY - startY);
+      let position = startY;
+      let velocity = 0;
+      let lastTime = performance.now();
 
       cancelAnimationFrame(animationFrame);
 
       function animate(time) {
-        const elapsed = time - startTime;
-        const t = Math.min(elapsed / duration, 1);
-        const eased = easeInOut(t);
-        const position = start + (end - start) * eased;
+        const dt = time - lastTime;
+        lastTime = time;
+
+        const distanceRemaining = Math.abs(endY - position);
+
+        // Deceleration logic: v² = 2ad ⇒ required stopping distance
+        const stoppingDistance = (velocity * velocity) / (2 * a);
+
+        if (distanceRemaining > stoppingDistance) {
+          // Accelerate
+          velocity = Math.min(velocity + a * dt, vMax);
+        } else {
+          // Decelerate
+          velocity = Math.max(velocity - a * dt, 0);
+        }
+
+        // Move lift
+        position += direction * velocity * dt;
         lift.style.bottom = `${position}px`;
 
+        // Update indicator
         const approxFloor = Math.round(position / floorHeight);
         indicator.textContent = floorNames[approxFloor] || "?";
 
-        if (t < 1) {
+        // Check if arrived
+        if (Math.abs(position - endY) > 1 || velocity > 0.01) {
           animationFrame = requestAnimationFrame(animate);
         } else {
+          lift.style.bottom = `${endY}px`;
+          indicator.textContent = floorNames[targetFloor];
           currentFloor = targetFloor;
         }
       }
