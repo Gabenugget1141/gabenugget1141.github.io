@@ -1,132 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Lift with Velocity</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lift Simulator</title>
   <style>
     body {
+      margin: 0;
+      background: #222;
       font-family: Arial, sans-serif;
       display: flex;
       justify-content: center;
-      margin-top: 50px;
+      align-items: center;
+      height: 100vh;
     }
-    .building {
+
+    .lift {
       position: relative;
       width: 200px;
-      height: 400px;
-      border: 2px solid #333;
-    }
-    .floor {
-      height: 100px;
-      border-bottom: 1px solid #ccc;
+      height: 300px;
+      background: #444;
+      border: 2px solid #888;
+      border-radius: 10px;
+      overflow: hidden;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0 10px;
-      background-color: #f0f0f0;
-    }
-    .shaft {
-      position: absolute;
-      left: 80px;
-      bottom: 0;
-      width: 40px;
-      height: 400px;
-      border-left: 2px solid #000;
-      border-right: 2px solid #000;
-    }
-    .lift {
-      position: absolute;
-      bottom: 0;
-      width: 40px;
-      height: 100px;
-      background-color: #444;
-      display: flex;
-      align-items: center;
+      flex-direction: column;
       justify-content: center;
-      color: #fff;
-      font-weight: bold;
-      font-size: 14px;
+      align-items: center;
     }
+
+    .inner-panel {
+      position: absolute;
+      top: 10px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .panel-display {
+      background-color: #111;
+      color: #0f0;
+      font-size: 32px;
+      font-family: 'Courier New', monospace;
+      padding: 10px 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 5px #0f0;
+    }
+
     .indicator {
-      background-color: #222;
-      padding: 4px 6px;
-      border-radius: 4px;
+      position: absolute;
+      bottom: 10px;
+      font-size: 18px;
+      color: #fff;
     }
   </style>
 </head>
 <body>
-  <div class="building">
-    <div class="floor">Floor 03 <button onclick="callLift(3)">Call</button></div>
-    <div class="floor">Floor 02 <button onclick="callLift(2)">Call</button></div>
-    <div class="floor">Floor 01 <button onclick="callLift(1)">Call</button></div>
-    <div class="floor">Floor GR <button onclick="callLift(0)">Call</button></div>
-    <div class="shaft">
-      <div class="lift" id="lift">
-        <div class="indicator" id="indicator">GR</div>
-      </div>
+  <div class="lift" id="lift">
+    <div class="inner-panel">
+      <div class="panel-display" id="panelDisplay">GR</div>
     </div>
+    <div class="indicator" id="indicator">GR</div>
   </div>
 
   <script>
-    const floorNames = { 0: "GR", 1: "01", 2: "02", 3: "03" };
-    const floorHeight = 100;
-    let currentFloor = 0;
-    let animationFrame;
+    const lift = document.getElementById("lift");
+    const indicator = document.getElementById("indicator");
+    const panelDisplay = document.getElementById("panelDisplay");
 
-    // Physics parameters
-    const vMax = 0.3; // max velocity in px/ms
-    const a = 0.001;  // acceleration in px/ms²
+    const floorNames = ["B2", "B1", "GR", "1", "2", "3", "4", "5"];
+    const totalFloors = floorNames.length;
+    let position = 2; // Start at GR
+    let direction = 1;
 
-    function callLift(targetFloor) {
-      const lift = document.getElementById("lift");
-      const indicator = document.getElementById("indicator");
+    function animate() {
+      position += direction * 0.02;
 
-      const startY = currentFloor * floorHeight;
-      const endY = targetFloor * floorHeight;
-      const direction = Math.sign(endY - startY);
-      let position = startY;
-      let velocity = 0;
-      let lastTime = performance.now();
-
-      cancelAnimationFrame(animationFrame);
-
-      function animate(time) {
-        const dt = time - lastTime;
-        lastTime = time;
-
-        const distanceRemaining = Math.abs(endY - position);
-
-        // Deceleration logic: v² = 2ad ⇒ required stopping distance
-        const stoppingDistance = (velocity * velocity) / (2 * a);
-
-        if (distanceRemaining > stoppingDistance) {
-          // Accelerate
-          velocity = Math.min(velocity + a * dt, vMax);
-        } else {
-          // Decelerate
-          velocity = Math.max(velocity - a * dt, 0);
-        }
-
-        // Move lift
-        position += direction * velocity * dt;
-        lift.style.bottom = `${position}px`;
-
-        // Update indicator
-        const approxFloor = Math.round(position / floorHeight);
-        indicator.textContent = floorNames[approxFloor] || "?";
-
-        // Check if arrived
-        if (Math.abs(position - endY) > 1 || velocity > 0.01) {
-          animationFrame = requestAnimationFrame(animate);
-        } else {
-          lift.style.bottom = `${endY}px`;
-          indicator.textContent = floorNames[targetFloor];
-          currentFloor = targetFloor;
-        }
+      if (position >= totalFloors - 1 || position <= 0) {
+        direction *= -1;
       }
 
-      animationFrame = requestAnimationFrame(animate);
+      const approxFloor = Math.round(position);
+      const displayText = floorNames[approxFloor] || "?";
+
+      indicator.textContent = displayText;
+      panelDisplay.textContent = displayText;
+
+      requestAnimationFrame(animate);
     }
+
+    animate();
   </script>
 </body>
 </html>
